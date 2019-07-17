@@ -34,6 +34,7 @@ namespace Program
                     Console.WriteLine();
                     Console.WriteLine("Press any key to exit");
                     Console.ReadKey();
+                    this.Exit();
                 },
                 renderer => _renderer = renderer);
 

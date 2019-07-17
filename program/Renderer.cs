@@ -10,7 +10,6 @@ namespace Program
 {
     public sealed class Renderer : IDisposable
     {
-        private readonly Vector4[] _frameBuffer;
         private readonly int _canvasWidth;
         private readonly int _canvasHeight;
         private bool isDisposed = false;
@@ -18,6 +17,7 @@ namespace Program
         private Context _context;
         private Accelerator _accelerator;
         private MemoryBuffer<Vector4> _gpuFrameBuffer;
+        private readonly Vector4[] _frameBuffer;
 
         private Renderer(int canvasWidth, int canvasHeight)
         {
