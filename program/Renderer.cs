@@ -15,11 +15,11 @@ namespace Program
         private bool isDisposed = false;
 
         private Context _context;
-        private Accelerator _accelerator;
-        private MemoryBuffer<Vector4> _gpuFrameBuffer;
+        private Accelerator _deviceAccelerator;
+        private MemoryBuffer2D<Vector4> _deviceFrameBuffer;
         private readonly Vector4[] _frameBuffer;
 
-        private Action<GroupedIndex, ArrayView<Vector4>, int, int> _kernel;
+        private Action<GroupedIndex, ArrayView2D<Vector4>, int, int> _kernel;
         private GroupedIndex _kernelGroupedIndex;
 
         private Renderer(int canvasWidth, int canvasHeight)
@@ -35,8 +35,8 @@ namespace Program
             {
                 var renderer = new Renderer(width, height);
                 renderer._context = new Context();
-                renderer._accelerator = new CudaAccelerator(renderer._context);
-                renderer._gpuFrameBuffer = renderer._accelerator.Allocate<Vector4>(renderer._frameBuffer.Length);
+                renderer._deviceAccelerator = new CudaAccelerator(renderer._context);
+                renderer._deviceFrameBuffer = renderer._deviceAccelerator.Allocate<Vector4>(width, height);
 
                 renderer.LoadKernels();
 
@@ -50,19 +50,19 @@ namespace Program
 
         public Vector4[] NextFrame()
         {
-            _gpuFrameBuffer.MemSetToZero();
-            _kernel(_kernelGroupedIndex, _gpuFrameBuffer.View, _canvasWidth, _canvasHeight);
-            _accelerator.Synchronize();
-            _gpuFrameBuffer.CopyTo(_frameBuffer, 0, 0, _frameBuffer.Length);
+            _deviceFrameBuffer.MemSetToZero();
+            _kernel(_kernelGroupedIndex, _deviceFrameBuffer.View, _canvasWidth, _canvasHeight);
+            _deviceAccelerator.Synchronize();
+            _deviceFrameBuffer.CopyTo(_frameBuffer, Index2.Zero, 0, new Index2(_canvasWidth, _canvasHeight));
 
             return _frameBuffer;
         }
 
         private void LoadKernels()
         {
-            _kernel = _accelerator.LoadStreamKernel<GroupedIndex, ArrayView<Vector4>, int, int>(RayTracerKernels.Frame);
-            var groupSize = _accelerator.MaxNumThreadsPerGroup;
-            _kernelGroupedIndex = new GroupedIndex((_gpuFrameBuffer.Length + groupSize - 1) / groupSize, groupSize);
+            _kernel = _deviceAccelerator.LoadStreamKernel<GroupedIndex, ArrayView2D<Vector4>, int, int>(RayTracerKernels.Frame);
+            var groupSize = _deviceAccelerator.MaxNumThreadsPerGroup;
+            _kernelGroupedIndex = new GroupedIndex((_deviceFrameBuffer.Length + groupSize - 1) / groupSize, groupSize);
         }
 
         private void Dispose(bool disposing)
@@ -71,8 +71,8 @@ namespace Program
             {
                 if(disposing)
                 {
-                    _gpuFrameBuffer.Dispose();
-                    _accelerator.Dispose();
+                    _deviceFrameBuffer.Dispose();
+                    _deviceAccelerator.Dispose();
                     _context.Dispose();
                 }
 
