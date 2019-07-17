@@ -6,11 +6,13 @@ namespace Program
 {
     public static class RayTracerKernels
     {
-        public static void Frame(Index index, ArrayView<Vector4> dataView, int xMax, int yMax)
+        public static void Frame(GroupedIndex index, ArrayView<Vector4> dataView, int xMax, int yMax)
         {
-            float g = index % (float)xMax / xMax;
-            float r = index / (float)yMax / yMax;
-            dataView[index] = new Vector4(r, g, 0f, 255f);
+            var idx = index.ComputeGlobalIndex();
+
+            float g = idx % (float)xMax / xMax;
+            float r = idx / (float)yMax / yMax;
+            dataView[idx] = new Vector4(r, g, 0f, 255f);
         }
     }
 }
