@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Program;
 
 namespace program
 {
@@ -6,7 +6,10 @@ namespace program
     {
         private static void Main()
         {
-            Console.WriteLine("Hello World!");
+            using(var engine = new Engine(800, 600))
+            {
+                engine.Run();
+            }
         }
     }
 }
