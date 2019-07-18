@@ -7,10 +7,10 @@ namespace Program
 {
     public static class RayTracerKernels
     {
-        public static void Frame(Index2 index, ArrayView2D<Vector4> dataView, int xMax, int yMax)
+        public static void Frame(Index2 index, ArrayView2D<Vector4> dataView, Index2 canvasSize)
         {
-            float g = index.X / (float)xMax;
-            float r = index.Y / (float)yMax;
+            float g = index.X / (float)canvasSize.X;
+            float r = index.Y / (float)canvasSize.Y;
             dataView[index] = new Vector4(r, g, 0f, 255f);
         }
     }

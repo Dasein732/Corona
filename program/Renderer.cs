@@ -11,23 +11,22 @@ namespace Program
     public sealed class Renderer : IDisposable
     {
         private readonly Vector4[] _frameBuffer;
-        private readonly int _canvasWidth;
-        private readonly int _canvasHeight;
+        private readonly Index2 _canvasSize;
         private bool isDisposed = false;
 
         private Context _context;
         private Accelerator _deviceAccelerator;
         private MemoryBuffer2D<Vector4> _deviceFrameBuffer;
 
-        private Action<Index2, ArrayView2D<Vector4>, int, int> kernel;
+        private Action<Index2, ArrayView2D<Vector4>, Index2> kernel;
 
         private Renderer(int canvasWidth, int canvasHeight)
         {
-            _canvasWidth = canvasWidth;
-            _canvasHeight = canvasHeight;
-            _frameBuffer = new Vector4[_canvasWidth * _canvasHeight];
+            _canvasSize = new Index2(canvasWidth, canvasHeight);
+            _frameBuffer = new Vector4[canvasWidth * canvasHeight];
         }
 
+        // TODO extract into a factory
         public static Either<Renderer, Exception> Initialize(int width, int height)
         {
             try
@@ -48,16 +47,16 @@ namespace Program
 
         public Vector4[] NextFrame()
         {
-            kernel(new Index2(_canvasWidth, _canvasHeight), _deviceFrameBuffer.View, _canvasWidth, _canvasHeight);
+            kernel(_canvasSize, _deviceFrameBuffer.View, _canvasSize);
             _deviceAccelerator.Synchronize();
-            _deviceFrameBuffer.CopyTo(_frameBuffer, Index2.Zero, 0, new Index2(_canvasWidth, _canvasHeight));
+            _deviceFrameBuffer.CopyTo(_frameBuffer, Index2.Zero, 0, _canvasSize);
 
             return _frameBuffer;
         }
 
         private void LoadKernel()
         {
-            kernel = _deviceAccelerator.LoadAutoGroupedStreamKernel<Index2, ArrayView2D<Vector4>, int, int>(RayTracerKernels.Frame);
+            kernel = _deviceAccelerator.LoadAutoGroupedStreamKernel<Index2, ArrayView2D<Vector4>, Index2>(RayTracerKernels.Frame);
         }
 
         private void Dispose(bool disposing)
