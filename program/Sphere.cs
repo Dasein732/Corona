@@ -7,19 +7,13 @@ namespace Program
 {
     public struct Sphere
     {
-        public Vector4 Position;
-        public float radius;
+        public Vector3 Position;
+        public float Radius;
 
-        public Sphere(Vector4 position)
+        public Sphere(Vector3 position)
         {
             Position = position;
-            Position.W = 1f;
-            radius = 1f;
-        }
-
-        public static Sphere Instantiate(Vector4 position)
-        {
-            return new Sphere(position);
+            Radius = 1f;
         }
     }
 }
