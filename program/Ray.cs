@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using ILGPU;
@@ -55,6 +56,34 @@ namespace Program
                     new IntersectionResult((-b + XMath.Sqrt(discriminant)) / (2 * a), ref sphere)
                 };
             }
+        }
+
+        // TODO implement in the kernel
+        public static IntersectionResult[] Aggregate(IntersectionResult[] left, IntersectionResult[] right)
+        {
+            return left.Concat(right).ToArray();
+        }
+
+        public static IntersectionResult ClosestRayHit(IntersectionResult[] results)
+        {
+            var tmp = new IntersectionResult();
+            tmp.T = float.MaxValue;
+
+            for(int i = 0; i < results.Length; i++)
+            {
+                if(results[i].T > 0 && results[i].T < tmp.T)
+                {
+                    tmp.T = results[i].T;
+                    tmp.IntersectedEntity = results[i].IntersectedEntity;
+                }
+            }
+
+            if(tmp.T < float.MaxValue)
+            {
+                return tmp;
+            }
+
+            return new IntersectionResult();
         }
     }
 }
