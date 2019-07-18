@@ -19,5 +19,10 @@ namespace Program
         {
             return ray.Origin + ray.Direction * tDistance;
         }
+
+        public static float[] Intersect(Ray ray, Sphere sphere)
+        {
+            return null;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Program;
+﻿using System.Numerics;
+using Program;
 
 namespace program
 {
@@ -6,10 +7,12 @@ namespace program
     {
         private static void Main()
         {
-            using(var engine = new Engine(800, 600))
-            {
-                engine.Run();
-            }
+            var sphere = Sphere.Instantiate(Vector4.Zero);
+
+            //using(var engine = new Engine(800, 600))
+            //{
+            //    engine.Run();
+            //}
         }
     }
 }
