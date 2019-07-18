@@ -43,24 +43,11 @@ namespace Tests
 
         [Theory]
         [MemberData(nameof(RayIntersectionData), 5)]
-        public static void On_Ray_Intersection_Correct_Intersection_Is_Calculated(Ray ray, Sphere sphere, float[] expected)
+        public static void On_Ray_Intersection_Correct_Intersection_Is_Calculated(Ray ray, Sphere sphere, IntersectionResult[] expected)
         {
             var actual = Ray.Intersect(ref ray, ref sphere);
 
             Assert.Equal(expected, actual);
-        }
-
-        public static IEnumerable<object[]> RayIntersectionData(int numTests)
-        {
-            var testData = new List<object[]> {
-                new object[]{new Ray(new Vector3(0f, 0f, -5f), new Vector3(0f, 0f, 1f)), new Sphere(Vector3.Zero), new float[] {4f, 6f} },
-                new object[]{new Ray(new Vector3(0f, 1f, -5f), new Vector3(0f, 0f, 1f)), new Sphere(Vector3.Zero), new float[] {5f, 5f } },
-                new object[]{new Ray(new Vector3(0f, 2f, -5f), new Vector3(0f, 0f, 1f)), new Sphere(Vector3.Zero), new float[] { } },
-                new object[]{new Ray(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 1f)), new Sphere(Vector3.Zero), new float[] {-1f, 1f } },
-                new object[]{new Ray(new Vector3(0f, 0f, 5f), new Vector3(0f, 0f, 1f)), new Sphere(Vector3.Zero), new float[] {-6f, -4f } },
-            };
-
-            return testData.Take(numTests);
         }
 
         public static IEnumerable<object[]> RayInitializationData(int numTests)
@@ -84,6 +71,21 @@ namespace Tests
                 new object[]{new Ray(new Vector3(1f, 2f, 3f), Vector3.One), -1f },
                 new object[]{new Ray(Vector3.Zero, new Vector3(7f, 5f, 3f)), 3f },
                 new object[]{new Ray(new Vector3(4f, 8f, 12f), new Vector3(11f, 24f, 35f)), -10f },
+            };
+
+            return testData.Take(numTests);
+        }
+
+        public static IEnumerable<object[]> RayIntersectionData(int numTests)
+        {
+            var sphere = new Sphere(Vector3.Zero);
+
+            var testData = new List<object[]> {
+                new object[]{new Ray(new Vector3(0f, 0f, -5f), new Vector3(0f, 0f, 1f)), sphere, new IntersectionResult[] {new IntersectionResult(4f, ref sphere), new IntersectionResult(6f, ref sphere) } },
+                new object[]{new Ray(new Vector3(0f, 1f, -5f), new Vector3(0f, 0f, 1f)), sphere, new IntersectionResult[] { new IntersectionResult(5f, ref sphere), new IntersectionResult(5f, ref sphere) } },
+                new object[]{new Ray(new Vector3(0f, 2f, -5f), new Vector3(0f, 0f, 1f)), sphere, new IntersectionResult[] { } },
+                new object[]{new Ray(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 1f)), sphere, new IntersectionResult[] { new IntersectionResult(-1f, ref sphere), new IntersectionResult(1f, ref sphere) } },
+                new object[]{new Ray(new Vector3(0f, 0f, 5f), new Vector3(0f, 0f, 1f)), sphere, new IntersectionResult[] { new IntersectionResult(-6f, ref sphere), new IntersectionResult(-4f, ref sphere) } },
             };
 
             return testData.Take(numTests);
