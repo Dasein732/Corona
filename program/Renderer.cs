@@ -16,8 +16,10 @@ namespace Program
         private bool isDisposed = false;
 
         private Context _context;
-        private Accelerator _accelerator;
-        private MemoryBuffer2D<Vector4> _gpuFrameBuffer;
+        private Accelerator _deviceAccelerator;
+        private MemoryBuffer2D<Vector4> _deviceFrameBuffer;
+
+        private Action<Index2, ArrayView2D<Vector4>, int, int> kernel;
 
         private Renderer(int canvasWidth, int canvasHeight)
         {
@@ -32,8 +34,9 @@ namespace Program
             {
                 var renderer = new Renderer(width, height);
                 renderer._context = new Context();
-                renderer._accelerator = new CudaAccelerator(renderer._context);
-                renderer._gpuFrameBuffer = renderer._accelerator.Allocate<Vector4>(width, height);
+                renderer._deviceAccelerator = new CudaAccelerator(renderer._context);
+                renderer._deviceFrameBuffer = renderer._deviceAccelerator.Allocate<Vector4>(width, height);
+                renderer.LoadKernel();
 
                 return renderer;
             }
@@ -45,13 +48,16 @@ namespace Program
 
         public Vector4[] NextFrame()
         {
-            var kernel = _accelerator.LoadAutoGroupedStreamKernel<Index2, ArrayView2D<Vector4>, int, int>(RayTracerKernels.Frame);
-
-            kernel(new Index2(_canvasWidth, _canvasHeight), _gpuFrameBuffer.View, _canvasWidth, _canvasHeight);
-            _accelerator.Synchronize();
-            _gpuFrameBuffer.CopyTo(_frameBuffer, Index2.Zero, 0, new Index2(_canvasWidth, _canvasHeight));
+            kernel(new Index2(_canvasWidth, _canvasHeight), _deviceFrameBuffer.View, _canvasWidth, _canvasHeight);
+            _deviceAccelerator.Synchronize();
+            _deviceFrameBuffer.CopyTo(_frameBuffer, Index2.Zero, 0, new Index2(_canvasWidth, _canvasHeight));
 
             return _frameBuffer;
+        }
+
+        private void LoadKernel()
+        {
+            kernel = _deviceAccelerator.LoadAutoGroupedStreamKernel<Index2, ArrayView2D<Vector4>, int, int>(RayTracerKernels.Frame);
         }
 
         private void Dispose(bool disposing)
@@ -60,8 +66,8 @@ namespace Program
             {
                 if(disposing)
                 {
-                    _gpuFrameBuffer.Dispose();
-                    _accelerator.Dispose();
+                    _deviceFrameBuffer.Dispose();
+                    _deviceAccelerator.Dispose();
                     _context.Dispose();
                 }
 
