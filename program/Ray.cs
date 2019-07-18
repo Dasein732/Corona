@@ -27,16 +27,15 @@ namespace Program
             return ray.Origin + ray.Direction * tDistance;
         }
 
-        public IntersectionResult[] Intersect(Sphere sphere)
+        public float[] Intersect(Sphere sphere)
         {
             return Intersect(ref this, ref sphere);
         }
 
-        public static IntersectionResult[] Intersect(ref Ray ray, ref Sphere sphere)
+        public static float[] Intersect(ref Ray ray, ref Sphere sphere)
         {
-            var sphereToRay = ray.Origin - sphere.Origin;
+            var sphereToRay = ray.Origin - sphere.Position;
 
-            // normalize direction before passing it to intersect?
             var a = Vector3.Dot(ray.Direction, ray.Direction);
             var b = Vector3.Dot(ray.Direction, sphereToRay) * 2;
             var c = Vector3.Dot(sphereToRay, sphereToRay) - 1;
@@ -45,14 +44,14 @@ namespace Program
 
             if(discriminant < 0)
             {
-                return new IntersectionResult[0];
+                return new float[0];
             }
             else
             {
-                return new IntersectionResult[2]
+                return new float[2]
                 {
-                    new IntersectionResult((-b - XMath.Sqrt(discriminant)) / (2 * a), ref sphere),
-                    new IntersectionResult((-b + XMath.Sqrt(discriminant)) / (2 * a), ref sphere)
+                    (-b - XMath.Sqrt(discriminant)) / (2 * a),
+                    (-b + XMath.Sqrt(discriminant)) / (2 * a)
                 };
             }
         }

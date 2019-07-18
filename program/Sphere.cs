@@ -7,12 +7,12 @@ namespace Program
 {
     public struct Sphere
     {
-        public Vector3 Origin;
+        public Vector3 Position;
         public float Radius;
 
         public Sphere(Vector3 position)
         {
-            Origin = position;
+            Position = position;
             Radius = 1f;
         }
     }
