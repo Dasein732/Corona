@@ -17,7 +17,7 @@ namespace Program
 
         private Context _context;
         private Accelerator _accelerator;
-        private MemoryBuffer<Vector4> _gpuFrameBuffer;
+        private MemoryBuffer2D<Vector4> _gpuFrameBuffer;
 
         private Renderer(int canvasWidth, int canvasHeight)
         {
@@ -33,7 +33,7 @@ namespace Program
                 var renderer = new Renderer(width, height);
                 renderer._context = new Context();
                 renderer._accelerator = new CudaAccelerator(renderer._context);
-                renderer._gpuFrameBuffer = renderer._accelerator.Allocate<Vector4>(renderer._frameBuffer.Length);
+                renderer._gpuFrameBuffer = renderer._accelerator.Allocate<Vector4>(width, height);
 
                 return renderer;
             }
@@ -45,11 +45,11 @@ namespace Program
 
         public Vector4[] NextFrame()
         {
-            var kernel = _accelerator.LoadAutoGroupedStreamKernel<Index, ArrayView<Vector4>, int, int>(RayTracerKernels.Frame);
+            var kernel = _accelerator.LoadAutoGroupedStreamKernel<Index2, ArrayView2D<Vector4>, int, int>(RayTracerKernels.Frame);
 
-            kernel(_gpuFrameBuffer.Length, _gpuFrameBuffer.View, _canvasWidth, _canvasHeight);
+            kernel(new Index2(_canvasWidth, _canvasHeight), _gpuFrameBuffer.View, _canvasWidth, _canvasHeight);
             _accelerator.Synchronize();
-            _gpuFrameBuffer.CopyTo(_frameBuffer, 0, 0, _frameBuffer.Length);
+            _gpuFrameBuffer.CopyTo(_frameBuffer, Index2.Zero, 0, new Index2(_canvasWidth, _canvasHeight));
 
             return _frameBuffer;
         }
